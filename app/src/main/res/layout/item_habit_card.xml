@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_card_white"
+    android:elevation="4dp">
+
+    <TextView
+        android:id="@+id/txtHabitName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Habit Name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#222222" />
+
+    <TextView
+        android:id="@+id/txtGoal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Goal: 15 minutes meditation"
+        android:textColor="#555555"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/txtType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Everyday"
+        android:textColor="#777777"
+        android:layout_marginTop="4dp" />
+
+    <ProgressBar
+        android:id="@+id/progressHabit"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:max="100"
+        android:progress="40"
+        android:layout_marginTop="8dp"
+        android:progressDrawable="@drawable/progress_circle_drawable" />
+</LinearLayout>
