@@ -1,57 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FFF8F5">
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FAFAFA">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/edtName"
+        android:hint="Nombre del hábito"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_card_white"
-        android:padding="16dp">
+        android:inputType="text" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Create New Habit Goal"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:layout_marginBottom="10dp" />
+    <EditText
+        android:id="@+id/edtGoal"
+        android:hint="Meta (por ejemplo: 30 minutos)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text" />
 
-        <EditText
-            android:id="@+id/etGoal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Your Goal" />
+    <EditText
+        android:id="@+id/edtPeriod"
+        android:hint="Período (diario, semanal, etc.)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text" />
 
-        <EditText
-            android:id="@+id/etHabitName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Habit Name"
-            android:layout_marginTop="8dp" />
+    <EditText
+        android:id="@+id/edtType"
+        android:hint="Tipo (salud, lectura, etc.)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text" />
 
-        <Spinner
-            android:id="@+id/spPeriod"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <Spinner
-            android:id="@+id/spType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <Button
-            android:id="@+id/btnCreate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Create Habit"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_orange"
-            android:textColor="#FFFFFF" />
-    </LinearLayout>
-</ScrollView>
+    <Button
+        android:id="@+id/btnSave"
+        android:text="Guardar hábito"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
+</LinearLayout>

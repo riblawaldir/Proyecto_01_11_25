@@ -77,6 +77,8 @@ public class StepSensorManager implements SensorEventListener {
         String json = prefs.getString("habits", null);
         List<Habit> habits = new ArrayList<>();
 
+        boolean completado = false;
+
         if (json != null) {
             try {
                 JSONArray array = new JSONArray(json);
@@ -91,7 +93,10 @@ public class StepSensorManager implements SensorEventListener {
                     );
 
                     if (h.getName().toLowerCase().contains("ejercicio")) {
-                        h.setDone(true);
+                        if (!h.isDone()) {
+                            h.setDone(true);
+                            completado = true;
+                        }
                     }
                     habits.add(h);
                 }
@@ -108,11 +113,24 @@ public class StepSensorManager implements SensorEventListener {
                 }
 
                 prefs.edit().putString("habits", newArray.toString()).apply();
-                Toast.makeText(activity, "Hábito 'Ejercicio' completado 💪", Toast.LENGTH_SHORT).show();
+
+                if (completado) {
+                    Toast.makeText(activity, "Hábito 'Ejercicio' completado 💪", Toast.LENGTH_SHORT).show();
+
+                    activity.runOnUiThread(() -> {
+                        try {
+                            java.lang.reflect.Method m = activity.getClass().getMethod("loadHabits");
+                            m.invoke(activity);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
     }
+
 }

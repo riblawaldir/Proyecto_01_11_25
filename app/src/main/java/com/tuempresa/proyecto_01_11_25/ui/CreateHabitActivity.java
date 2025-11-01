@@ -3,95 +3,88 @@ package com.tuempresa.proyecto_01_11_25.ui;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.tuempresa.proyecto_01_11_25.R;
-import com.tuempresa.proyecto_01_11_25.model.Habit;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CreateHabitActivity extends AppCompatActivity {
 
-    private EditText etGoal, etHabitName;
-    private Spinner spPeriod, spType;
-    private Button btnCreate;
-    private SharedPreferences prefs;
-    private List<Habit> tempHabits = new ArrayList<>();
+    private EditText edtName, edtGoal, edtPeriod, edtType;
+    private Button btnSave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_habit);
 
-        etGoal = findViewById(R.id.etGoal);
-        etHabitName = findViewById(R.id.etHabitName);
-        spPeriod = findViewById(R.id.spPeriod);
-        spType = findViewById(R.id.spType);
-        btnCreate = findViewById(R.id.btnCreate);
 
-        prefs = getSharedPreferences("HabitusPrefs", Context.MODE_PRIVATE);
+        edtName = findViewById(R.id.edtName);
+        edtGoal = findViewById(R.id.edtGoal);
+        edtPeriod = findViewById(R.id.edtPeriod);
+        edtType = findViewById(R.id.edtType);
+        btnSave = findViewById(R.id.btnSave);
 
-        // Cargar opciones
-        ArrayAdapter<String> adapterPeriod = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item,
-                new String[]{"7 days", "14 days", "1 month", "3 months"});
-        adapterPeriod.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spPeriod.setAdapter(adapterPeriod);
-
-        ArrayAdapter<String> adapterType = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item,
-                new String[]{"Everyday", "3 times/week", "Weekend only"});
-        adapterType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spType.setAdapter(adapterType);
-
-        btnCreate.setOnClickListener(v -> saveHabit());
+        btnSave.setOnClickListener(v -> guardarHabito());
     }
 
-    private void saveHabit() {
-        String goal = etGoal.getText().toString().trim();
-        String name = etHabitName.getText().toString().trim();
-        String period = spPeriod.getSelectedItem().toString();
-        String type = spType.getSelectedItem().toString();
+    private void guardarHabito() {
+        String name = edtName.getText().toString().trim();
+        String goal = edtGoal.getText().toString().trim();
+        String period = edtPeriod.getText().toString().trim();
+        String type = edtType.getText().toString().trim();
 
-        if (goal.isEmpty() || name.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || goal.isEmpty() || period.isEmpty() || type.isEmpty()) {
+            Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Habit newHabit = new Habit(name, goal, period, type, false);
-        tempHabits.add(newHabit);
-        saveHabitsToPrefs(tempHabits);
-
-        Toast.makeText(this, "Habit created successfully!", Toast.LENGTH_SHORT).show();
-        finish();
-    }
-
-    private void saveHabitsToPrefs(List<Habit> habits) {
+        SharedPreferences prefs = getSharedPreferences("HabitusPrefs", Context.MODE_PRIVATE);
+        String existing = prefs.getString("habits", null);
         JSONArray array = new JSONArray();
-        for (Habit h : habits) {
-            JSONObject obj = new JSONObject();
-            try {
-                obj.put("name", h.getName());
-                obj.put("goal", h.getGoal());
-                obj.put("period", h.getPeriod());
-                obj.put("type", h.getType());
-                obj.put("done", h.isDone());
-                array.put(obj);
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+        try {
+
+            if (existing != null) {
+                array = new JSONArray(existing);
             }
+
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject existingHabit = array.getJSONObject(i);
+                if (existingHabit.getString("name").equalsIgnoreCase(name)) {
+                    Toast.makeText(this, "⚠️ Ya existe un hábito con ese nombre", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
+
+            JSONObject habitObj = new JSONObject();
+            habitObj.put("name", name);
+            habitObj.put("goal", goal);
+            habitObj.put("period", period);
+            habitObj.put("type", type);
+            habitObj.put("done", false);
+
+
+            array.put(habitObj);
+
+
+            prefs.edit().putString("habits", array.toString()).apply();
+
+            Toast.makeText(this, "✅ Hábito guardado correctamente", Toast.LENGTH_SHORT).show();
+            finish();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "❌ Error al guardar el hábito", Toast.LENGTH_SHORT).show();
         }
-        prefs.edit().putString("habits", array.toString()).apply();
     }
 }

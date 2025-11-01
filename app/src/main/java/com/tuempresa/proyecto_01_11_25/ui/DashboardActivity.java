@@ -13,6 +13,7 @@ import com.tuempresa.proyecto_01_11_25.R;
 import com.tuempresa.proyecto_01_11_25.model.Habit;
 import com.tuempresa.proyecto_01_11_25.sensors.StepSensorManager;
 import com.tuempresa.proyecto_01_11_25.sensors.LightSensorManager;
+import com.tuempresa.proyecto_01_11_25.sensors.GyroSensorManager;
 
 
 import org.json.JSONArray;
@@ -30,6 +31,8 @@ public class DashboardActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     private StepSensorManager stepSensor;
     private LightSensorManager lightSensor;
+    private GyroSensorManager gyroSensor;
+
 
 
 
@@ -39,6 +42,8 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
         lightSensor = new LightSensorManager(this);
         stepSensor = new StepSensorManager(this);
+        gyroSensor = new GyroSensorManager(this);
+
 
 
         rvHabits = findViewById(R.id.rvHabits);
@@ -57,15 +62,17 @@ public class DashboardActivity extends AppCompatActivity {
         super.onResume();
         stepSensor.start();
         lightSensor.start();
+        gyroSensor.start();
         loadHabits();
     }
     protected void onPause(){
         super.onPause();
         stepSensor.stop();
         lightSensor.stop();
+        gyroSensor.start();
     }
 
-    private void loadHabits() {
+    public void loadHabits() {
         habitList.clear();
         String json = prefs.getString("habits", null);
 
