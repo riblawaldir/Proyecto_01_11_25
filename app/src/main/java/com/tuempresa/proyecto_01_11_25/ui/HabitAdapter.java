@@ -1,8 +1,9 @@
 package com.tuempresa.proyecto_01_11_25.ui;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Color;
+import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,105 +12,84 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.tuempresa.proyecto_01_11_25.R;
 import com.tuempresa.proyecto_01_11_25.model.Habit;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.tuempresa.proyecto_01_11_25.model.HabitEvent;
+import com.tuempresa.proyecto_01_11_25.model.HabitEventStore;
 
 import java.util.List;
 
-public class HabitAdapter extends RecyclerView.Adapter<HabitAdapter.HabitViewHolder> {
+public class HabitAdapter extends RecyclerView.Adapter<HabitAdapter.VH> {
 
-    private final List<Habit> habitList;
-    private final Context context;
-
-    public HabitAdapter(Context context ,List<Habit> habitList) {
-        this.context = context;
-        this.habitList = habitList;
-
+    public interface OnHabitClick {
+        void onHabitClicked(Habit habit);
     }
 
-    @NonNull
-    @Override
-    public HabitViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_habit_card, parent, false);
-        return new HabitViewHolder(view);
+    private final List<Habit> data;
+    private final OnHabitClick listener;
+
+    public HabitAdapter(List<Habit> data, OnHabitClick listener) {
+        this.data = data;
+        this.listener = listener;
+    }
+
+    @NonNull @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_habit_card, parent, false);
+        return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull HabitViewHolder holder, int position) {
-        Habit h = habitList.get(position);
-        holder.txtHabitName.setText(h.getName());
-        holder.txtGoal.setText("Goal: " + h.getGoal());
-        holder.txtType.setText(h.getType());
-        int startProgress = holder.progressHabit.getProgress();
-        int endProgress = h.isDone() ? 100 : 40;
+    public void onBindViewHolder(@NonNull VH h, int pos) {
+        Habit item = data.get(pos);
+        h.txtName.setText(item.getTitle());
+        h.txtGoal.setText(item.getGoal());
+        h.txtType.setText(item.getCategory());
+        
+        // Configurar progreso y color según estado
+        boolean isCompleted = item.isCompleted();
+        h.progress.setProgress(isCompleted ? 100 : 25);
+        
+        // Cambiar color de la barra: verde si está completado, naranja si no
+        if (isCompleted) {
+            // Barra verde para tareas completadas
+            h.progress.setProgressDrawable(
+                ContextCompat.getDrawable(
+                    h.itemView.getContext(), 
+                    R.drawable.progress_circle_drawable_green
+                )
+            );
+        } else {
+            // Barra naranja para tareas pendientes
+            h.progress.setProgressDrawable(
+                ContextCompat.getDrawable(
+                    h.itemView.getContext(), 
+                    R.drawable.progress_circle_drawable
+                )
+            );
+        }
 
-
-        int color = h.isDone() ? Color.parseColor("#4CAF50") : Color.parseColor("#FF9800");
-        holder.progressHabit.getProgressDrawable().setTint(color);
-
-
-        new Thread(() -> {
-            int step = (endProgress > startProgress) ? 1 : -1;
-            for (int i = startProgress; i != endProgress; i += step) {
-                int progress = i;
-                holder.progressHabit.post(() -> holder.progressHabit.setProgress(progress));
-                try {
-                    Thread.sleep(10); // velocidad de animación
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
-        holder.itemView.setOnClickListener(view -> {
-            h.setDone((!h.isDone()));
-            notifyItemChanged(position);
-            saveHabitsToPrefs();
-            Toast.makeText(context,h.isDone() ? "Marked as done " : "Marked as pending",Toast.LENGTH_SHORT).show();
+        h.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onHabitClicked(item);
         });
     }
 
-    private void saveHabitsToPrefs() {
-        SharedPreferences prefs = context.getSharedPreferences("HabitusPrefs", Context.MODE_PRIVATE);
-        JSONArray array = new JSONArray();
-        for (Habit h : habitList) {
-            JSONObject obj = new JSONObject();
-            try {
-                obj.put("name", h.getName());
-                obj.put("goal", h.getGoal());
-                obj.put("period", h.getPeriod());
-                obj.put("type", h.getType());
-                obj.put("done", h.isDone());
-                array.put(obj);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        prefs.edit().putString("habits", array.toString()).apply();
-    }
+    @Override public int getItemCount() { return data.size(); }
 
-    @Override
-    public int getItemCount() {
-        return habitList.size();
-    }
-
-    public static class HabitViewHolder extends RecyclerView.ViewHolder {
-        TextView txtHabitName, txtGoal, txtType;
-        ProgressBar progressHabit;
-
-        public HabitViewHolder(@NonNull View itemView) {
-            super(itemView);
-            txtHabitName = itemView.findViewById(R.id.txtHabitName);
-            txtGoal = itemView.findViewById(R.id.txtGoal);
-            txtType = itemView.findViewById(R.id.txtType);
-            progressHabit = itemView.findViewById(R.id.progressHabit);
+    static class VH extends RecyclerView.ViewHolder {
+        TextView txtName, txtGoal, txtType;
+        ProgressBar progress;
+        VH(@NonNull View v) {
+            super(v);
+            txtName  = v.findViewById(R.id.txtHabitName);
+            txtGoal  = v.findViewById(R.id.txtGoal);
+            txtType  = v.findViewById(R.id.txtType);
+            progress = v.findViewById(R.id.progressHabit);
         }
     }
 }

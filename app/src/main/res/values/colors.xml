@@ -7,4 +7,8 @@
     <color name="textDark">#222222</color>
     <color name="textLight">#888888</color>
     <color name="cardWhite">#FFFFFF</color>
+    <color name="teal_700">#018786</color>
+    <color name="orange">#FF5200</color> <!-- por si no existe -->
+    <color name="green_success">#4CAF50</color>
+    <color name="green_dark">#2E7D32</color>
 </resources>

@@ -3,31 +3,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF8F5">
+    android:background="?android:attr/windowBackground">
 
-    <!-- Encabezado -->
+    <!-- Título -->
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Today’s Habits"
+        android:text="Today's Habits"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#000000"
+        android:textColor="?android:attr/textColorPrimary"
         android:layout_marginStart="16dp"
         android:layout_marginTop="20dp" />
 
-    <!-- Lista de tarjetas -->
+    <!-- Lista de hábitos -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHabits"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/txtTitle"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="100dp"
         android:padding="12dp" />
 
-    <!-- Botón flotante -->
+    <!-- Botón MAPA (encima del botón agregar hábito) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/fabAddHabit"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_map"
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/teal_700"
+        android:contentDescription="Ver mapa de logros" />
+
+    <!-- Botón AGREGAR HÁBITO -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddHabit"
         android:layout_width="wrap_content"
@@ -37,5 +51,7 @@
         android:layout_margin="20dp"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="#FF5200"
-        app:tint="@android:color/white" />
+        app:tint="@android:color/white"
+        android:contentDescription="Agregar nuevo hábito" />
+
 </RelativeLayout>

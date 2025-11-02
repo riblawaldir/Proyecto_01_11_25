@@ -1,25 +1,43 @@
 package com.tuempresa.proyecto_01_11_25.model;
 
-public class Habit {
-    private String name;
-    private String goal;
-    private String period;
-    private String type;
-    private boolean done;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Habit(String name, String goal, String period, String type, boolean done) {
-        this.name = name;
-        this.goal = goal;
-        this.period = period;
-        this.type = type;
-        this.done = done;
+public class Habit {
+
+    public enum HabitType {
+        EXERCISE,   // acelerómetro
+        WALK,       // distancia
+        DEMO        // botón
     }
 
-    public String getName() { return name; }
-    public String getGoal() { return goal; }
-    public String getPeriod() { return period; }
-    public String getType() { return type; }
-    public boolean isDone() { return done; }
+    private String title;
+    private String goal;
+    private String category;
+    private HabitType type;
+    private boolean completed;
 
-    public void setDone(boolean done) { this.done = done; }
+    public Habit(String title, String goal, String category, HabitType type) {
+        this.title = title;
+        this.goal = goal;
+        this.category = category;
+        this.type = type;
+        this.completed = false;
+    }
+
+    public String getTitle() { return title; }
+    public String getGoal() { return goal; }
+    public String getCategory() { return category; }
+    public HabitType getType() { return type; }
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
+
+    /** 3 hábitos por defecto al abrir la app */
+    public static List<Habit> defaultHabits() {
+        List<Habit> list = new ArrayList<>();
+        list.add(new Habit("Ejercicio", "Goal: movimiento detectado", "salud", HabitType.EXERCISE));
+        list.add(new Habit("Caminar", "Goal: 150 metros", "salud", HabitType.WALK));
+        list.add(new Habit("Demo", "Goal: tocar para completar", "general", HabitType.DEMO));
+        return list;
+    }
 }

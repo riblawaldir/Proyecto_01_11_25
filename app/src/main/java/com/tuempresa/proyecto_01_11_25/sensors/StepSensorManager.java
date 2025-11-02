@@ -1,136 +1,102 @@
 package com.tuempresa.proyecto_01_11_25.sensors;
 
-import android.app.Activity;
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.widget.Toast;
 
-import com.tuempresa.proyecto_01_11_25.model.Habit;
+import androidx.core.content.ContextCompat;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.tuempresa.proyecto_01_11_25.model.HabitEvent;
+import com.tuempresa.proyecto_01_11_25.model.HabitEventStore;
 
-import java.util.ArrayList;
-import java.util.List;
+public class StepSensorManager {
 
-public class StepSensorManager implements SensorEventListener {
+    private static final float TARGET_METERS = 150f;
 
-    private final SensorManager sensorManager;
-    private final Sensor accelerometer;
-    private final Activity activity;
-    private long lastUpdate = 0;
-    private float lastX, lastY, lastZ;
+    private final Context ctx;
+    private final FusedLocationProviderClient fused;
+    private Location last;
+    private float accMeters = 0f;
+    private boolean done = false;
 
-    public StepSensorManager(Activity activity) {
-        this.activity = activity;
-        sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    private LocationCallback callback;
+    private Runnable onWalkCompletedCallback;
+
+    public StepSensorManager(Context ctx) {
+        this(ctx, null);
     }
 
+    public StepSensorManager(Context ctx, Runnable onWalkCompletedCallback) {
+        this.ctx = ctx;
+        this.onWalkCompletedCallback = onWalkCompletedCallback;
+        this.fused = LocationServices.getFusedLocationProviderClient(ctx);
+    }
+
+    @SuppressLint("MissingPermission")
     public void start() {
-        if (accelerometer != null)
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        else
-            Toast.makeText(activity, "No hay acelerómetro disponible", Toast.LENGTH_SHORT).show();
+        done = false;
+        accMeters = 0f;
+        if (!hasPermission()) {
+            Toast.makeText(ctx, "Sin permiso de ubicación", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000)
+                .setMinUpdateIntervalMillis(1500)
+                .setMinUpdateDistanceMeters(2)
+                .build();
+
+        callback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult result) {
+                for (Location loc : result.getLocations()) {
+                    if (last != null) {
+                        accMeters += last.distanceTo(loc);
+                    }
+                    last = loc;
+
+                    if (!done && accMeters >= TARGET_METERS) {
+                        done = true;
+                        HabitEventStore.add(new HabitEvent(
+                                loc.getLatitude(),
+                                loc.getLongitude(),
+                                "Caminar completado (" + (int)accMeters + " m) 🚶",
+                                HabitEvent.HabitType.WALK
+                        ));
+                        Toast.makeText(ctx, "Meta de caminar alcanzada", Toast.LENGTH_LONG).show();
+                        
+                        // Notificar callback si existe
+                        if (onWalkCompletedCallback != null) {
+                            onWalkCompletedCallback.run();
+                        }
+                        
+                        stop();
+                        break;
+                    }
+                }
+            }
+        };
+
+        fused.requestLocationUpdates(req, callback, ctx.getMainLooper());
     }
 
     public void stop() {
-        sensorManager.unregisterListener(this);
+        if (callback != null) fused.removeLocationUpdates(callback);
+        callback = null;
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
-
-        long currentTime = System.currentTimeMillis();
-        if ((currentTime - lastUpdate) > 500) {
-            long diff = currentTime - lastUpdate;
-            lastUpdate = currentTime;
-
-            float speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diff * 10000;
-
-            if (speed > 800) {
-                activity.runOnUiThread(() -> {
-                    Toast.makeText(activity, "Movimiento detectado 🏃‍♂️", Toast.LENGTH_SHORT).show();
-                    marcarEjercicioComoCompletado();
-                });
-            }
-
-            lastX = x;
-            lastY = y;
-            lastZ = z;
-        }
+    private boolean hasPermission() {
+        return ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
     }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-
-    private void marcarEjercicioComoCompletado() {
-        SharedPreferences prefs = activity.getSharedPreferences("HabitusPrefs", Context.MODE_PRIVATE);
-        String json = prefs.getString("habits", null);
-        List<Habit> habits = new ArrayList<>();
-
-        boolean completado = false;
-
-        if (json != null) {
-            try {
-                JSONArray array = new JSONArray(json);
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject obj = array.getJSONObject(i);
-                    Habit h = new Habit(
-                            obj.getString("name"),
-                            obj.getString("goal"),
-                            obj.getString("period"),
-                            obj.getString("type"),
-                            obj.getBoolean("done")
-                    );
-
-                    if (h.getName().toLowerCase().contains("ejercicio")) {
-                        if (!h.isDone()) {
-                            h.setDone(true);
-                            completado = true;
-                        }
-                    }
-                    habits.add(h);
-                }
-
-                JSONArray newArray = new JSONArray();
-                for (Habit h : habits) {
-                    JSONObject o = new JSONObject();
-                    o.put("name", h.getName());
-                    o.put("goal", h.getGoal());
-                    o.put("period", h.getPeriod());
-                    o.put("type", h.getType());
-                    o.put("done", h.isDone());
-                    newArray.put(o);
-                }
-
-                prefs.edit().putString("habits", newArray.toString()).apply();
-
-                if (completado) {
-                    Toast.makeText(activity, "Hábito 'Ejercicio' completado 💪", Toast.LENGTH_SHORT).show();
-
-                    activity.runOnUiThread(() -> {
-                        try {
-                            java.lang.reflect.Method m = activity.getClass().getMethod("loadHabits");
-                            m.invoke(activity);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
 }
