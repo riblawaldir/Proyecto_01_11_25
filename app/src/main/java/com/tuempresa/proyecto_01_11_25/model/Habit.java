@@ -8,7 +8,8 @@ public class Habit {
     public enum HabitType {
         EXERCISE,   // acelerómetro
         WALK,       // distancia
-        DEMO        // botón
+        DEMO,       // botón
+        READ        // cámara + ML Kit
     }
 
     private String title;
@@ -32,11 +33,12 @@ public class Habit {
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
 
-    /** 3 hábitos por defecto al abrir la app */
+    /** 4 hábitos por defecto al abrir la app */
     public static List<Habit> defaultHabits() {
         List<Habit> list = new ArrayList<>();
         list.add(new Habit("Ejercicio", "Goal: movimiento detectado", "salud", HabitType.EXERCISE));
         list.add(new Habit("Caminar", "Goal: 150 metros", "salud", HabitType.WALK));
+        list.add(new Habit("Leer", "Goal: detectar página de libro", "educación", HabitType.READ));
         list.add(new Habit("Demo", "Goal: tocar para completar", "general", HabitType.DEMO));
         return list;
     }

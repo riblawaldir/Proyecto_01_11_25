@@ -83,6 +83,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case FOCUS:
                 drawableId = R.drawable.ic_do_not_disturb_on_24;
                 break;
+            case READ:
+                drawableId = R.drawable.ic_menu_book_24;
+                break;
             case DEMO:
             default:
                 // Para DEMO usamos el icono de ejercicio como fallback
