@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Vista previa de la cámara -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Overlay para indicar área de detección -->
+    <View
+        android:id="@+id/overlayView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000" />
+
+    <!-- Rectángulo de detección (centro de la pantalla) -->
+    <View
+        android:id="@+id/detectionFrame"
+        android:layout_width="280dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/detection_frame_border"
+        android:elevation="4dp" />
+
+    <!-- Texto de instrucciones -->
+    <TextView
+        android:id="@+id/txtInstructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/detectionFrame"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:text="Apunta la cámara a una página de libro"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:shadowColor="#000000"
+        android:shadowRadius="4"
+        android:shadowDx="2"
+        android:shadowDy="2" />
+
+    <!-- Estado de detección -->
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detectionFrame"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Buscando texto..."
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:shadowColor="#000000"
+        android:shadowRadius="4"
+        android:shadowDx="2"
+        android:shadowDy="2" />
+
+    <!-- Botón cerrar -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_arrow_back_24"
+        app:tint="@android:color/white"
+        app:backgroundTint="#80000000"
+        android:contentDescription="Cerrar cámara" />
+
+</RelativeLayout>
+
